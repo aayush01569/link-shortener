@@ -21,7 +21,7 @@
 
         <div class="mb-4">
             <p class="text-gray-600">Redirecting in</p>
-            <p id="countdown" class="text-3xl font-bold text-indigo-600">5</p>
+            <p id="countdown" class="text-3xl font-bold text-indigo-600">15</p>
         </div>
 
         <p class="text-sm text-gray-500">
@@ -31,8 +31,10 @@
     </div>
 
     <script>
-        let timeLeft = 5;
+        let timeLeft = 15;
         const countdown = document.getElementById("countdown");
+
+        countdown.innerText = timeLeft;
 
         const timer = setInterval(() => {
             timeLeft--;
