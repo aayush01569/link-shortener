@@ -13,18 +13,20 @@ app = Flask(__name__)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    # Render PostgreSQL fix (if you add later)
+    # Fix old postgres:// format (Render compatibility)
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-else:
-    # Fallback to SQLite (for local)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///links.db"
 
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "connect_args": {"check_same_thread": False}
-}
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+else:
+    # Local SQLite fallback
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///links.db"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "connect_args": {"check_same_thread": False}
+    }
 
 db = SQLAlchemy(app)
 
