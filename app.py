@@ -6,40 +6,61 @@ import os
 
 app = Flask(__name__)
 
-# Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///links.db"
-)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# -------------------------
+# DATABASE CONFIGURATION
+# -------------------------
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    # Render PostgreSQL fix (if you add later)
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+else:
+    # Fallback to SQLite (for local)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///links.db"
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "connect_args": {"check_same_thread": False}
+}
 
 db = SQLAlchemy(app)
 
-# Database Model
+# -------------------------
+# DATABASE MODEL
+# -------------------------
+
 class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     original_url = db.Column(db.String(500), nullable=False)
     short_code = db.Column(db.String(10), unique=True, nullable=False)
     clicks = db.Column(db.Integer, default=0)
 
+# -------------------------
+# UTIL FUNCTION
+# -------------------------
 
-# Generate random short code
 def generate_code(length=6):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
+# -------------------------
+# ROUTES
+# -------------------------
 
-# Home Page
-@app.route('/')
+@app.route("/")
 def index():
     return render_template("index.html")
 
-
-# Shorten URL
-@app.route('/shorten', methods=['POST'])
+@app.route("/shorten", methods=["POST"])
 def shorten():
-    url = request.form['url']
+    url = request.form.get("url")
 
-    # Generate unique code
+    if not url:
+        return "URL is required", 400
+
+    # Ensure unique short code
     while True:
         code = generate_code()
         if not Link.query.filter_by(short_code=code).first():
@@ -52,25 +73,28 @@ def shorten():
     short_url = request.host_url + code
     return f"Short URL: {short_url}"
 
-
-# Redirect with Ad Page
-@app.route('/<code>')
+@app.route("/<code>")
 def redirect_to_url(code):
     link = Link.query.filter_by(short_code=code).first()
 
-    if link:
-        link.clicks += 1
-        db.session.commit()
-        return render_template("ad_page.html", url=link.original_url)
+    if not link:
+        return "Invalid URL", 404
 
-    return "Invalid URL", 404
+    link.clicks += 1
+    db.session.commit()
 
+    return render_template("ad_page.html", url=link.original_url)
 
-# Create database tables
+# -------------------------
+# INIT DB
+# -------------------------
+
 with app.app_context():
     db.create_all()
 
+# -------------------------
+# LOCAL RUN
+# -------------------------
 
-# Run only if local
 if __name__ == "__main__":
     app.run()
