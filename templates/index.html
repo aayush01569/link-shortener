@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Shortener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-600 to-purple-700 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 sm:p-8">
+        
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6">
+            🚀 Smart Link Shortener
+        </h1>
+
+        <form method="POST" action="/shorten" class="space-y-4">
+            <input 
+                type="url" 
+                name="url" 
+                placeholder="Enter your long URL..." 
+                required
+                class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+
+            <button 
+                type="submit"
+                class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300"
+            >
+                Shorten Link
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+            Fast • Secure • Mobile Friendly
+        </p>
+
+    </div>
+
+</body>
+</html>
